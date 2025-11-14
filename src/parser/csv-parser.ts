@@ -6,9 +6,9 @@ import { Participant } from '../types/participant';
  * Options pour le parser CSV
  */
 export interface CSVParserOptions {
-  /** Supprimer les doublons (par nom) */
+  /** Suppression des doublons (par nom) */
   removeDuplicates?: boolean;
-  /** Encoder le fichier (défaut: utf-8) */
+  /** Encodage du fichier (défaut: utf-8) */
   encoding?: BufferEncoding;
 }
 

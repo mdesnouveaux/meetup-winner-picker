@@ -29,7 +29,7 @@ program
   .option('-o, --output <file>', 'Fichier de sortie pour sauvegarder les résultats')
   .option('--format <type>', 'Format de sortie (text ou json)', 'text')
   .option('-v, --verbose', 'Afficher les détails du tirage', false)
-  .action(async (file: string, options) => {
+  .action((file: string, options) => {
     try {
       // Chargement des participants
       console.log(formatLoading('Chargement des participants'));
