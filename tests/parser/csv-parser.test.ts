@@ -92,4 +92,16 @@ describe('CSV Parser', () => {
 
     expect(participants[0]).toEqual({ nom: 'Alice', email: 'alice@example.com' });
   });
+
+  it('devrait traiter les emails vides ou avec espaces comme undefined', () => {
+    const csv = 'nom,email\nAlice,\nBob,   \nCharlie,  \t  ';
+    writeFileSync(testFile, csv);
+
+    const participants = parseParticipants(testFile);
+
+    expect(participants).toHaveLength(3);
+    expect(participants[0]).toEqual({ nom: 'Alice', email: undefined });
+    expect(participants[1]).toEqual({ nom: 'Bob', email: undefined });
+    expect(participants[2]).toEqual({ nom: 'Charlie', email: undefined });
+  });
 });

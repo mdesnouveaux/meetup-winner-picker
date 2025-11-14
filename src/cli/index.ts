@@ -40,7 +40,9 @@ program
       // Préparer les options
       const count = parseInt(options.number, 10);
       if (isNaN(count) || count < 1) {
-        throw new Error('Le nombre de gagnants doit être un entier positif');
+        throw new Error(
+          `Nombre invalide "${options.number}". Le nombre de gagnants doit être un entier positif.`
+        );
       }
 
       const exclude = options.exclude

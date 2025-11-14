@@ -69,9 +69,10 @@ export function parseParticipants(filePath: string, options: CSVParserOptions = 
         throw new CSVParserError(`Ligne ${index + 2}: le nom ne peut pas être vide`);
       }
 
-      // Email optionnel
-      const email =
-        record.email && typeof record.email === 'string' ? record.email.trim() : undefined;
+      // Email optionnel (ignorer si vide ou que des espaces)
+      const trimmedEmail =
+        record.email && typeof record.email === 'string' ? record.email.trim() : '';
+      const email = trimmedEmail.length > 0 ? trimmedEmail : undefined;
 
       return { nom, email };
     });

@@ -94,7 +94,10 @@ describe('Formatter', () => {
 
       // Le hash devrait être tronqué (premiers 16 caractères + ...)
       expect(output).toContain('a1b2c3d4e5f6g7h8...');
-      expect(output).not.toContain(mockResult.hash); // Hash complet pas affiché
+
+      // Vérifier que la fin du hash n'est pas affichée (preuve de troncature)
+      const hashEnd = mockResult.hash.substring(20); // Derniers caractères
+      expect(output).not.toContain(hashEnd);
     });
   });
 
