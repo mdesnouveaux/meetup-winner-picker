@@ -2,6 +2,7 @@ import { randomInt } from 'crypto';
 import seedrandom from 'seedrandom';
 import { Participant, PickOptions, PickResult } from '../types/participant';
 import { generateVerificationHash } from '../utils/hash';
+import { Clock, systemClock } from '../utils/clock';
 
 /**
  * Erreur de sélection
@@ -23,6 +24,7 @@ export class PickerError extends Error {
  *
  * @param participants - Liste des participants
  * @param options - Options de sélection
+ * @param clock - Clock pour injection du temps (défaut: systemClock)
  * @returns Résultat du tirage avec gagnants et métadonnées
  * @throws PickerError si les paramètres sont invalides
  *
@@ -45,7 +47,11 @@ export class PickerError extends Error {
  * });
  * ```
  */
-export function selectWinners(participants: Participant[], options: PickOptions = {}): PickResult {
+export function selectWinners(
+  participants: Participant[],
+  options: PickOptions = {},
+  clock: Clock = systemClock
+): PickResult {
   const { count = 1, seed, exclude = [] } = options;
 
   // Validation
@@ -77,7 +83,7 @@ export function selectWinners(participants: Participant[], options: PickOptions 
   }
 
   // Timestamp du tirage
-  const timestamp = new Date();
+  const timestamp = clock.now();
 
   // Créer une copie pour ne pas modifier l'original
   const pool = [...eligible];

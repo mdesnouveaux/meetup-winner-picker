@@ -1,5 +1,6 @@
 import { selectWinners, PickerError } from '../../src/picker/random-selector';
 import { Participant } from '../../src/types/participant';
+import { createFixedClock } from '../../src/utils/clock';
 
 describe('Random Selector', () => {
   const participants: Participant[] = [
@@ -32,23 +33,38 @@ describe('Random Selector', () => {
     expect(uniqueNames.size).toBe(3);
   });
 
-  it('devrait produire le même résultat avec le même seed', () => {
-    const result1 = selectWinners(participants, { seed: 'test-seed', count: 3 });
-    const result2 = selectWinners(participants, { seed: 'test-seed', count: 3 });
+  it('devrait produire le même résultat avec le même seed et la même clock', () => {
+    const fixedClock = createFixedClock(new Date('2025-01-01T00:00:00.000Z'));
 
-    // Avec le même seed, les mêmes gagnants doivent être sélectionnés
+    const result1 = selectWinners(participants, { seed: 'test-seed', count: 3 }, fixedClock);
+    const result2 = selectWinners(participants, { seed: 'test-seed', count: 3 }, fixedClock);
+
+    // Avec le même seed et la même clock, tout doit être identique
     expect(result1.winners).toEqual(result2.winners);
-    // Note: Les hash seront différents car ils incluent le timestamp
-    // C'est intentionnel pour tracer QUAND le tirage a eu lieu
+    expect(result1.timestamp).toEqual(result2.timestamp);
+    expect(result1.hash).toBe(result2.hash);
   });
 
   it('devrait produire des résultats différents avec des seeds différents', () => {
-    const result1 = selectWinners(participants, { seed: 'seed1' });
-    const result2 = selectWinners(participants, { seed: 'seed2' });
+    const fixedClock = createFixedClock(new Date('2025-01-01T00:00:00.000Z'));
 
-    // Note: Il y a une petite chance qu'ils soient identiques, mais très faible
-    // On vérifie surtout que les hash sont différents (incluent le seed)
+    const result1 = selectWinners(participants, { seed: 'seed1' }, fixedClock);
+    const result2 = selectWinners(participants, { seed: 'seed2' }, fixedClock);
+
+    // Avec des seeds différents, les hash doivent être différents
     expect(result1.hash).not.toBe(result2.hash);
+  });
+
+  it('devrait produire des hash différents avec des timestamps différents', () => {
+    const clock1 = createFixedClock(new Date('2025-01-01T00:00:00.000Z'));
+    const clock2 = createFixedClock(new Date('2025-01-01T00:01:00.000Z'));
+
+    const result1 = selectWinners(participants, { seed: 'same-seed' }, clock1);
+    const result2 = selectWinners(participants, { seed: 'same-seed' }, clock2);
+
+    // Même seed mais timestamps différents = hash différents
+    expect(result1.winners).toEqual(result2.winners); // Mêmes gagnants
+    expect(result1.hash).not.toBe(result2.hash); // Mais hash différents
   });
 
   it('devrait exclure les participants spécifiés', () => {
