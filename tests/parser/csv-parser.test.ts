@@ -19,8 +19,11 @@ describe('CSV Parser', () => {
     // Nettoyer le fichier de test
     try {
       unlinkSync(testFile);
-    } catch (e) {
-      // Ignore si n'existe pas
+    } catch (e: any) {
+      // Ignore uniquement si le fichier n'existe pas
+      if (e.code !== 'ENOENT') {
+        console.warn('Failed to clean up test file:', e.message);
+      }
     }
   });
 

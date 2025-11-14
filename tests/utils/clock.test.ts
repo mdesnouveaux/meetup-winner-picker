@@ -9,11 +9,11 @@ describe('Clock', () => {
 
     it('devrait retourner des dates différentes à chaque appel', async () => {
       const date1 = systemClock.now();
-      // Attendre 1ms
-      await new Promise((resolve) => setTimeout(resolve, 1));
+      // Attendre 5ms pour garantir un timestamp différent même sur systèmes rapides
+      await new Promise((resolve) => setTimeout(resolve, 5));
       const date2 = systemClock.now();
 
-      expect(date2.getTime()).toBeGreaterThanOrEqual(date1.getTime());
+      expect(date2.getTime()).toBeGreaterThan(date1.getTime());
     });
   });
 

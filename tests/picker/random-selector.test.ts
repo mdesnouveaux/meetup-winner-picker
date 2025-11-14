@@ -125,7 +125,7 @@ describe('Random Selector', () => {
     ).toThrow(/Aucun participant éligible/);
   });
 
-  it('devrait avoir une distribution équitable (test statistique)', () => {
+  it('devrait avoir une distribution équitable (test statistique ±2% sur 10k tirages)', () => {
     // Test de fairness : sur beaucoup de tirages, chaque participant
     // devrait être sélectionné environ le même nombre de fois
 

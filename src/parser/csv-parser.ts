@@ -57,16 +57,19 @@ export function parseParticipants(filePath: string, options: CSVParserOptions = 
 
     // Valider et mapper les participants
     const participants: Participant[] = records.map((record: any, index: number) => {
+      // Numéro de ligne dans le fichier : index (0-based) + 1 (header) + 1 (conversion 1-based) = index + 2
+      const lineNumber = index + 2;
+
       // Vérifier que le champ 'nom' existe
       if (!record.nom || typeof record.nom !== 'string') {
         throw new CSVParserError(
-          `Ligne ${index + 2}: le champ 'nom' est requis et doit être une chaîne de caractères`
+          `Ligne ${lineNumber}: le champ 'nom' est requis et doit être une chaîne de caractères`
         );
       }
 
       const nom = record.nom.trim();
       if (nom.length === 0) {
-        throw new CSVParserError(`Ligne ${index + 2}: le nom ne peut pas être vide`);
+        throw new CSVParserError(`Ligne ${lineNumber}: le nom ne peut pas être vide`);
       }
 
       // Email optionnel (ignorer si vide ou que des espaces)
