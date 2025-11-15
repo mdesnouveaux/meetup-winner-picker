@@ -84,7 +84,7 @@ describe('CSV Parser', () => {
     writeFileSync(testFile, csv);
 
     expect(() => parseParticipants(testFile)).toThrow(CSVParserError);
-    expect(() => parseParticipants(testFile)).toThrow(/le champ 'nom' est requis/);
+    expect(() => parseParticipants(testFile)).toThrow(/le champ '(nom|Name)' est requis/);
   });
 
   it('devrait trimmer les espaces', () => {
@@ -165,7 +165,7 @@ describe('CSV Parser', () => {
       writeFileSync(testFile, csv);
 
       expect(() => parseParticipants(testFile)).toThrow(CSVParserError);
-      expect(() => parseParticipants(testFile)).toThrow(/le champ 'nom' est requis/);
+      expect(() => parseParticipants(testFile)).toThrow(/doit contenir une colonne 'nom' ou 'Name'/);
     });
 
     it('devrait lever une erreur si un nom contient uniquement des espaces', () => {
@@ -175,7 +175,7 @@ describe('CSV Parser', () => {
       expect(() => parseParticipants(testFile)).toThrow(CSVParserError);
       // csv-parse avec trim:true convertit les espaces en chaîne vide avant notre validation
       // donc le champ est considéré comme manquant (!record.nom est true pour "")
-      expect(() => parseParticipants(testFile)).toThrow(/le champ 'nom' est requis/);
+      expect(() => parseParticipants(testFile)).toThrow(/le champ '(nom|Name)' est requis/);
     });
 
     it('devrait lever une erreur avec un numéro de ligne correct', () => {
@@ -238,6 +238,87 @@ describe('CSV Parser', () => {
       expect(participants).toHaveLength(2);
       expect(participants[0].nom).toBe('Alice\nDoe');
       expect(participants[1].nom).toBe('Bob');
+    });
+  });
+
+  describe('Support format CSV Meetup', () => {
+    it('devrait parser un CSV Meetup avec colonnes Name/Email', () => {
+      const csv = 'Name,Email\nAlice Cooper,alice@example.com\nBob Dylan,bob@example.com';
+      writeFileSync(testFile, csv);
+
+      const participants = parseParticipants(testFile);
+
+      expect(participants).toHaveLength(2);
+      expect(participants[0]).toEqual({ nom: 'Alice Cooper', email: 'alice@example.com' });
+      expect(participants[1]).toEqual({ nom: 'Bob Dylan', email: 'bob@example.com' });
+    });
+
+    it('devrait ignorer les emails masqués de Meetup', () => {
+      const csv =
+        'Name,Email\nAlice,Email hidden • Upgrade to Pro to view attendee emails for future events\nBob,bob@example.com';
+      writeFileSync(testFile, csv);
+
+      const participants = parseParticipants(testFile);
+
+      expect(participants).toHaveLength(2);
+      expect(participants[0]).toEqual({ nom: 'Alice', email: undefined });
+      expect(participants[1]).toEqual({ nom: 'Bob', email: 'bob@example.com' });
+    });
+
+    it('devrait parser un export Meetup complet avec toutes les colonnes', () => {
+      const csv = `"Name","Title","Member ID","Email","Location","Joined Group on","RSVP"
+"Alexi Coard",,361899740,"Email hidden • Upgrade to Pro to view attendee emails for future events","Nancy","June 9, 2023","Yes"
+"Mathieu Desnouveaux",,228722675,"mathieu@example.com","Nancy","January 29, 2019","Yes"
+"Siufong",,222815575,"Email hidden • Upgrade to Pro to view attendee emails for future events","Nancy","January 30, 2019","Yes"`;
+      writeFileSync(testFile, csv);
+
+      const participants = parseParticipants(testFile);
+
+      expect(participants).toHaveLength(3);
+      expect(participants[0]).toEqual({ nom: 'Alexi Coard', email: undefined });
+      expect(participants[1]).toEqual({ nom: 'Mathieu Desnouveaux', email: 'mathieu@example.com' });
+      expect(participants[2]).toEqual({ nom: 'Siufong', email: undefined });
+    });
+
+    it('devrait prioriser la colonne "nom" si présente avec "Name"', () => {
+      const csv = 'nom,Name,Email\nAlice,Wrong Name,alice@example.com';
+      writeFileSync(testFile, csv);
+
+      const participants = parseParticipants(testFile);
+
+      expect(participants).toHaveLength(1);
+      expect(participants[0].nom).toBe('Alice'); // Doit utiliser 'nom', pas 'Name'
+    });
+
+    it('devrait prioriser la colonne "email" si présente avec "Email"', () => {
+      const csv = 'nom,email,Email\nAlice,alice@example.com,wrong@example.com';
+      writeFileSync(testFile, csv);
+
+      const participants = parseParticipants(testFile);
+
+      expect(participants).toHaveLength(1);
+      expect(participants[0].email).toBe('alice@example.com'); // Doit utiliser 'email', pas 'Email'
+    });
+
+    it('devrait fonctionner avec seulement la colonne Name (sans email)', () => {
+      const csv = 'Name\nAlice Cooper\nBob Dylan';
+      writeFileSync(testFile, csv);
+
+      const participants = parseParticipants(testFile);
+
+      expect(participants).toHaveLength(2);
+      expect(participants[0]).toEqual({ nom: 'Alice Cooper', email: undefined });
+      expect(participants[1]).toEqual({ nom: 'Bob Dylan', email: undefined });
+    });
+
+    it('devrait lever une erreur si ni "nom" ni "Name" ne sont présents', () => {
+      const csv = 'FullName,Email\nAlice,alice@example.com';
+      writeFileSync(testFile, csv);
+
+      expect(() => parseParticipants(testFile)).toThrow(CSVParserError);
+      expect(() => parseParticipants(testFile)).toThrow(
+        /doit contenir une colonne 'nom' ou 'Name'/
+      );
     });
   });
 

@@ -23,11 +23,41 @@ export class CSVParserError extends Error {
 }
 
 /**
+ * Détermine quelle colonne utiliser pour le nom du participant
+ * Supporte à la fois le format français (nom) et anglais/Meetup (Name)
+ */
+function detectNameColumn(record: any): string | null {
+  // Priorité : nom > Name
+  // Vérifier l'existence de la propriété, pas sa valeur (pour gérer les chaînes vides)
+  if ('nom' in record) return 'nom';
+  if ('Name' in record) return 'Name';
+  return null;
+}
+
+/**
+ * Détermine quelle colonne utiliser pour l'email du participant
+ * Supporte à la fois le format français (email) et anglais/Meetup (Email)
+ */
+function detectEmailColumn(record: any): string | null {
+  if (record.email !== undefined) return 'email';
+  if (record.Email !== undefined) return 'Email';
+  return null;
+}
+
+/**
+ * Vérifie si l'email est masqué par Meetup (format "Email hidden • Upgrade to Pro...")
+ */
+function isHiddenMeetupEmail(email: string): boolean {
+  return email.includes('Email hidden') || email.includes('Upgrade to Pro');
+}
+
+/**
  * Parse un fichier CSV contenant la liste des participants
  *
- * Format attendu:
- * - Première ligne: en-têtes (nom, email)
- * - Lignes suivantes: données des participants
+ * Formats supportés:
+ * - Format français: colonnes 'nom' et 'email' (optionnel)
+ * - Format Meetup: colonnes 'Name' et 'Email' (optionnel)
+ * - Les emails masqués Meetup sont automatiquement traités comme undefined
  *
  * @param filePath - Chemin vers le fichier CSV
  * @param options - Options de parsing
@@ -55,27 +85,52 @@ export function parseParticipants(filePath: string, options: CSVParserOptions = 
       bom: true, // Support UTF-8 BOM
     });
 
+    // Détection des colonnes (effectuée sur le premier enregistrement)
+    let nameColumn: string | null = null;
+    let emailColumn: string | null = null;
+
     // Valider et mapper les participants
     const participants: Participant[] = records.map((record: any, index: number) => {
       // Numéro de ligne dans le fichier : index (0-based) + 1 (header) + 1 (conversion 1-based) = index + 2
       const lineNumber = index + 2;
 
-      // Vérifier que le champ 'nom' existe
-      if (!record.nom || typeof record.nom !== 'string') {
+      // Détection des colonnes au premier enregistrement
+      if (index === 0) {
+        nameColumn = detectNameColumn(record);
+        emailColumn = detectEmailColumn(record);
+
+        if (!nameColumn) {
+          throw new CSVParserError(
+            `Le fichier CSV doit contenir une colonne 'nom' ou 'Name' pour les noms des participants`
+          );
+        }
+      }
+
+      // Vérifier que le champ nom existe
+      const nameValue = record[nameColumn!];
+      if (!nameValue || typeof nameValue !== 'string') {
         throw new CSVParserError(
-          `Ligne ${lineNumber}: le champ 'nom' est requis et doit être une chaîne de caractères`
+          `Ligne ${lineNumber}: le champ '${nameColumn}' est requis et doit être une chaîne de caractères`
         );
       }
 
-      const nom = record.nom.trim();
+      const nom = nameValue.trim();
       if (nom.length === 0) {
         throw new CSVParserError(`Ligne ${lineNumber}: le nom ne peut pas être vide`);
       }
 
-      // Email optionnel (ignorer si vide ou que des espaces)
-      const trimmedEmail =
-        record.email && typeof record.email === 'string' ? record.email.trim() : '';
-      const email = trimmedEmail.length > 0 ? trimmedEmail : undefined;
+      // Email optionnel (ignorer si vide, que des espaces, ou email masqué Meetup)
+      let email: string | undefined = undefined;
+      if (emailColumn) {
+        const emailValue = record[emailColumn];
+        if (emailValue && typeof emailValue === 'string') {
+          const trimmedEmail = emailValue.trim();
+          // Vérifier que l'email n'est pas vide et n'est pas un email masqué Meetup
+          if (trimmedEmail.length > 0 && !isHiddenMeetupEmail(trimmedEmail)) {
+            email = trimmedEmail;
+          }
+        }
+      }
 
       return { nom, email };
     });
