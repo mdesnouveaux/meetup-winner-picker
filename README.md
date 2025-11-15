@@ -12,9 +12,10 @@ Outil de tirage au sort équitable et transparent pour sélectionner aléatoirem
 - 📊 **Algorithme équitable** (Fisher-Yates shuffle)
 - 🔄 **Reproductibilité** avec seeds personnalisés
 - 🚫 **Exclusion de participants** facilement
-- 📁 **Import CSV** simple
+- 📁 **Support natif des exports CSV Meetup** (pas de conversion nécessaire !)
+- 🔒 **Filtrage automatique** des emails masqués Meetup
 - 🎨 **Affichage formaté et coloré** dans le terminal
-- ✅ **Tests exhaustifs** (20 tests, 100% de couverture sur le core)
+- ✅ **Tests exhaustifs** (couverture complète)
 - 🔍 **Hash de vérification** pour l'audit
 - 📤 **Export** en texte ou JSON
 
@@ -42,18 +43,31 @@ npm run build
 
 ## 🚀 Utilisation
 
-### Format CSV
+### Format CSV (Export Meetup)
 
-Créez un fichier CSV avec au minimum une colonne `nom` :
+Le parser accepte **uniquement le format d'export CSV Meetup** avec les colonnes `Name` et `Email` (optionnel).
+
+#### Export depuis Meetup
+
+1. Accédez à votre événement Meetup
+2. Allez dans l'onglet "Attendees" (Participants)
+3. Cliquez sur "Export" ou "Download CSV"
+4. Le fichier téléchargé est directement compatible
+
+#### Format attendu
 
 ```csv
-nom,email
-Jean Dupont,jean.dupont@example.com
-Marie Martin,marie.martin@example.com
-Pierre Durant,pierre.durant@example.com
+Name,Email,Member ID,Location,RSVP
+Jean Dupont,jean.dupont@example.com,12345,Paris,Yes
+Marie Martin,Email hidden • Upgrade to Pro,23456,Lyon,Yes
+Pierre Durant,pierre.durant@example.com,34567,Marseille,Yes
 ```
 
-La colonne `email` est optionnelle.
+**Notes importantes :**
+- La colonne `Name` est **obligatoire**
+- La colonne `Email` est **optionnelle**
+- Les emails masqués par Meetup ("Email hidden • Upgrade to Pro...") sont automatiquement filtrés
+- Toutes les autres colonnes (Member ID, Location, RSVP, etc.) sont ignorées
 
 ### Commandes CLI
 
@@ -226,11 +240,10 @@ Avec couverture :
 npm run test:coverage
 ```
 
-Résultats actuels : **20/20 tests passent** ✅
-
 Les tests couvrent :
-- Parsing CSV (8 tests)
-- Sélection aléatoire (12 tests)
+- Parsing CSV format Meetup
+- Sélection aléatoire cryptographiquement sécurisée
+- Gestion des emails masqués Meetup
 - Edge cases (liste vide, doublons, exclusions, etc.)
 - Fairness statistique
 

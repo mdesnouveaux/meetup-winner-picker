@@ -23,11 +23,19 @@ export class CSVParserError extends Error {
 }
 
 /**
+ * Vérifie si l'email est masqué par Meetup (format "Email hidden • Upgrade to Pro...")
+ */
+function isHiddenMeetupEmail(email: string): boolean {
+  return email.includes('Email hidden') || email.includes('Upgrade to Pro');
+}
+
+/**
  * Parse un fichier CSV contenant la liste des participants
  *
- * Format attendu:
- * - Première ligne: en-têtes (nom, email)
+ * Format attendu (format Meetup):
+ * - Première ligne: en-têtes avec colonnes 'Name' et 'Email' (optionnel)
  * - Lignes suivantes: données des participants
+ * - Les emails masqués Meetup ("Email hidden • Upgrade to Pro...") sont automatiquement traités comme undefined
  *
  * @param filePath - Chemin vers le fichier CSV
  * @param options - Options de parsing
@@ -60,22 +68,27 @@ export function parseParticipants(filePath: string, options: CSVParserOptions = 
       // Numéro de ligne dans le fichier : index (0-based) + 1 (header) + 1 (conversion 1-based) = index + 2
       const lineNumber = index + 2;
 
-      // Vérifier que le champ 'nom' existe
-      if (!record.nom || typeof record.nom !== 'string') {
+      // Vérifier que le champ 'Name' existe (format Meetup uniquement)
+      if (!record.Name || typeof record.Name !== 'string') {
         throw new CSVParserError(
-          `Ligne ${lineNumber}: le champ 'nom' est requis et doit être une chaîne de caractères`
+          `Ligne ${lineNumber}: le champ 'Name' est requis et doit être une chaîne de caractères`
         );
       }
 
-      const nom = record.nom.trim();
+      const nom = record.Name.trim();
       if (nom.length === 0) {
         throw new CSVParserError(`Ligne ${lineNumber}: le nom ne peut pas être vide`);
       }
 
-      // Email optionnel (ignorer si vide ou que des espaces)
-      const trimmedEmail =
-        record.email && typeof record.email === 'string' ? record.email.trim() : '';
-      const email = trimmedEmail.length > 0 ? trimmedEmail : undefined;
+      // Email optionnel (ignorer si vide, que des espaces, ou email masqué Meetup)
+      let email: string | undefined = undefined;
+      if (record.Email && typeof record.Email === 'string') {
+        const trimmedEmail = record.Email.trim();
+        // Vérifier que l'email n'est pas vide et n'est pas un email masqué Meetup
+        if (trimmedEmail.length > 0 && !isHiddenMeetupEmail(trimmedEmail)) {
+          email = trimmedEmail;
+        }
+      }
 
       return { nom, email };
     });

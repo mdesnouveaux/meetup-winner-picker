@@ -48,10 +48,10 @@ describe('CLI', () => {
   const outputFile = join(testDir, 'output.txt');
   const outputJsonFile = join(testDir, 'output.json');
 
-  // Test CSV data constants
-  const CSV_TWO_PARTICIPANTS = 'nom,email\nAlice,alice@example.com\nBob,bob@example.com';
-  const CSV_THREE_PARTICIPANTS = 'nom,email\nAlice,alice@example.com\nBob,bob@example.com\nCharlie,charlie@example.com';
-  const CSV_FOUR_PARTICIPANTS = 'nom,email\nAlice,alice@example.com\nBob,bob@example.com\nCharlie,charlie@example.com\nDavid,david@example.com';
+  // Test CSV data constants (format Meetup)
+  const CSV_TWO_PARTICIPANTS = 'Name,Email\nAlice,alice@example.com\nBob,bob@example.com';
+  const CSV_THREE_PARTICIPANTS = 'Name,Email\nAlice,alice@example.com\nBob,bob@example.com\nCharlie,charlie@example.com';
+  const CSV_FOUR_PARTICIPANTS = 'Name,Email\nAlice,alice@example.com\nBob,bob@example.com\nCharlie,charlie@example.com\nDavid,david@example.com';
 
   beforeAll(() => {
     try {
@@ -246,7 +246,7 @@ describe('CLI', () => {
     });
 
     it('devrait afficher une erreur si le nombre de gagnants est invalide', async () => {
-      const csv = 'nom\nAlice\nBob';
+      const csv = 'Name\nAlice\nBob';
       writeFileSync(testFile, csv);
 
       await runCLI(['pick', testFile, '--number', 'invalid']);
@@ -258,7 +258,7 @@ describe('CLI', () => {
     });
 
     it('devrait afficher une erreur si le nombre de gagnants est négatif', async () => {
-      const csv = 'nom\nAlice\nBob';
+      const csv = 'Name\nAlice\nBob';
       writeFileSync(testFile, csv);
 
       await runCLI(['pick', testFile, '--number', '-1']);
@@ -270,7 +270,7 @@ describe('CLI', () => {
     });
 
     it('devrait afficher une erreur si le nombre de gagnants est zéro', async () => {
-      const csv = 'nom\nAlice\nBob';
+      const csv = 'Name\nAlice\nBob';
       writeFileSync(testFile, csv);
 
       await runCLI(['pick', testFile, '--number', '0']);
@@ -293,7 +293,7 @@ describe('CLI', () => {
     });
 
     it('devrait afficher une erreur si le nombre de gagnants dépasse le nombre de participants', async () => {
-      const csv = 'nom\nAlice\nBob';
+      const csv = 'Name\nAlice\nBob';
       writeFileSync(testFile, csv);
 
       await runCLI(['pick', testFile, '--number', '10']);
@@ -305,7 +305,7 @@ describe('CLI', () => {
     });
 
     it('devrait afficher une erreur si tous les participants sont exclus', async () => {
-      const csv = 'nom\nAlice\nBob';
+      const csv = 'Name\nAlice\nBob';
       writeFileSync(testFile, csv);
 
       await runCLI(['pick', testFile, '--exclude', 'Alice,Bob']);
@@ -330,7 +330,7 @@ describe('CLI', () => {
 
   describe('Edge cases', () => {
     it('devrait gérer un seul participant', async () => {
-      const csv = 'nom\nAlice';
+      const csv = 'Name\nAlice';
       writeFileSync(testFile, csv);
 
       await runCLI(['pick', testFile]);
@@ -341,7 +341,7 @@ describe('CLI', () => {
     });
 
     it('devrait gérer des participants sans email', async () => {
-      const csv = 'nom\nAlice\nBob\nCharlie';
+      const csv = 'Name\nAlice\nBob\nCharlie';
       writeFileSync(testFile, csv);
 
       await runCLI(['pick', testFile]);
@@ -352,7 +352,7 @@ describe('CLI', () => {
     });
 
     it('devrait gérer des noms avec espaces', async () => {
-      const csv = 'nom,email\n  Alice Dupont  ,alice@example.com\n  Bob Martin  ,bob@example.com';
+      const csv = 'Name,Email\n  Alice Dupont  ,alice@example.com\n  Bob Martin  ,bob@example.com';
       writeFileSync(testFile, csv);
 
       await runCLI(['pick', testFile]);
@@ -362,7 +362,7 @@ describe('CLI', () => {
     });
 
     it('devrait gérer les exclusions avec espaces et casse différente', async () => {
-      const csv = 'nom\nAlice\nBob\nCharlie';
+      const csv = 'Name\nAlice\nBob\nCharlie';
       writeFileSync(testFile, csv);
 
       await runCLI(['pick', testFile, '--exclude', ' alice , BOB ']);
@@ -375,7 +375,7 @@ describe('CLI', () => {
 
     it('devrait gérer un grand nombre de participants', async () => {
       // Créer un CSV avec 100 participants
-      let csv = 'nom,email\n';
+      let csv = 'Name,Email\n';
       for (let i = 1; i <= 100; i++) {
         csv += `Participant${i},participant${i}@example.com\n`;
       }
@@ -389,7 +389,7 @@ describe('CLI', () => {
     });
 
     it('devrait gérer les doublons dans le CSV', async () => {
-      const csv = 'nom\nAlice\nBob\nAlice\nCharlie\nBob';
+      const csv = 'Name\nAlice\nBob\nAlice\nCharlie\nBob';
       writeFileSync(testFile, csv);
 
       await runCLI(['pick', testFile]);
