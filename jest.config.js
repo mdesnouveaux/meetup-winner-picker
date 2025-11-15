@@ -13,4 +13,7 @@ module.exports = {
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
+  transformIgnorePatterns: [
+    'node_modules/(?!(chalk|#ansi-styles|ansi-regex|strip-ansi|ansi-styles)/)',
+  ],
 };

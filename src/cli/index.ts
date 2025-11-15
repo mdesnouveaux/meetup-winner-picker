@@ -34,7 +34,9 @@ program
       // Chargement des participants
       console.log(formatLoading('Chargement des participants'));
       const participants = parseParticipants(file);
-      console.log(formatSuccess(`${participants.length} participants chargés`));
+      const participantText =
+        participants.length === 1 ? 'participant chargé' : 'participants chargés';
+      console.log(formatSuccess(`${participants.length} ${participantText}`));
       console.log('');
 
       // Préparer les options
