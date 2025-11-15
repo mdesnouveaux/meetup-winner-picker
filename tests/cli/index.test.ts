@@ -48,6 +48,11 @@ describe('CLI', () => {
   const outputFile = join(testDir, 'output.txt');
   const outputJsonFile = join(testDir, 'output.json');
 
+  // Test CSV data constants
+  const CSV_TWO_PARTICIPANTS = 'nom,email\nAlice,alice@example.com\nBob,bob@example.com';
+  const CSV_THREE_PARTICIPANTS = 'nom,email\nAlice,alice@example.com\nBob,bob@example.com\nCharlie,charlie@example.com';
+  const CSV_FOUR_PARTICIPANTS = 'nom,email\nAlice,alice@example.com\nBob,bob@example.com\nCharlie,charlie@example.com\nDavid,david@example.com';
+
   beforeAll(() => {
     try {
       require('fs').mkdirSync(testDir, { recursive: true });
@@ -96,9 +101,7 @@ describe('CLI', () => {
 
   describe('Command parsing', () => {
     beforeEach(() => {
-      // Create a valid test CSV
-      const csv = 'nom,email\nAlice,alice@example.com\nBob,bob@example.com\nCharlie,charlie@example.com';
-      writeFileSync(testFile, csv);
+      writeFileSync(testFile, CSV_THREE_PARTICIPANTS);
     });
 
     it('devrait exécuter le tirage avec un fichier CSV valide', async () => {
@@ -173,8 +176,7 @@ describe('CLI', () => {
 
   describe('Output file handling', () => {
     beforeEach(() => {
-      const csv = 'nom,email\nAlice,alice@example.com\nBob,bob@example.com';
-      writeFileSync(testFile, csv);
+      writeFileSync(testFile, CSV_TWO_PARTICIPANTS);
     });
 
     it('devrait sauvegarder le résultat en format texte', async () => {
@@ -400,8 +402,7 @@ describe('CLI', () => {
 
   describe('Combined options', () => {
     beforeEach(() => {
-      const csv = 'nom,email\nAlice,alice@example.com\nBob,bob@example.com\nCharlie,charlie@example.com\nDavid,david@example.com';
-      writeFileSync(testFile, csv);
+      writeFileSync(testFile, CSV_FOUR_PARTICIPANTS);
     });
 
     it('devrait combiner seed, number et exclude', async () => {
