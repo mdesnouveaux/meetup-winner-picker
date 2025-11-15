@@ -334,7 +334,7 @@ describe('CLI', () => {
       await runCLI(['pick', testFile]);
 
       const output = consoleLogOutput.join('\n');
-      expect(output).toContain('1 participants chargés');
+      expect(output).toContain('1 participant chargé');
       expect(output).toContain('Alice');
     });
 
