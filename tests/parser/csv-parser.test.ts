@@ -168,12 +168,13 @@ describe('CSV Parser', () => {
       expect(() => parseParticipants(testFile)).toThrow(/le champ 'nom' est requis/);
     });
 
-    it('devrait lever une erreur si un nom est vide après trim', () => {
+    it('devrait lever une erreur si un nom contient uniquement des espaces', () => {
       const csv = 'nom,email\n   ,alice@example.com';
       writeFileSync(testFile, csv);
 
       expect(() => parseParticipants(testFile)).toThrow(CSVParserError);
-      // Le champ nom vide après trim est considéré comme manquant
+      // csv-parse avec trim:true convertit les espaces en chaîne vide avant notre validation
+      // donc le champ est considéré comme manquant (!record.nom est true pour "")
       expect(() => parseParticipants(testFile)).toThrow(/le champ 'nom' est requis/);
     });
 
