@@ -4,7 +4,7 @@ Outil de tirage au sort équitable et transparent pour sélectionner aléatoirem
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/tests-20%2F20-brightgreen)](.)
+[![Tests](https://img.shields.io/badge/tests-107%2F107-brightgreen)](.)
 
 ## ✨ Fonctionnalités
 
@@ -13,8 +13,9 @@ Outil de tirage au sort équitable et transparent pour sélectionner aléatoirem
 - 🔄 **Reproductibilité** avec seeds personnalisés
 - 🚫 **Exclusion de participants** facilement
 - 📁 **Import CSV** simple
+- 🎉 **Support natif des exports CSV Meetup** (pas de conversion nécessaire !)
 - 🎨 **Affichage formaté et coloré** dans le terminal
-- ✅ **Tests exhaustifs** (20 tests, 100% de couverture sur le core)
+- ✅ **Tests exhaustifs** (27 tests, couverture complète)
 - 🔍 **Hash de vérification** pour l'audit
 - 📤 **Export** en texte ou JSON
 
@@ -44,6 +45,8 @@ npm run build
 
 ### Format CSV
 
+#### Format français simple
+
 Créez un fichier CSV avec au minimum une colonne `nom` :
 
 ```csv
@@ -54,6 +57,27 @@ Pierre Durant,pierre.durant@example.com
 ```
 
 La colonne `email` est optionnelle.
+
+#### Exports Meetup (format natif)
+
+L'outil supporte directement les exports CSV de Meetup sans modification ! 🎉
+
+Vous pouvez utiliser directement les fichiers CSV exportés depuis Meetup qui contiennent les colonnes `Name` et `Email`, même avec toutes les colonnes supplémentaires (Member ID, Location, RSVP, etc.). Le parser détectera automatiquement le format.
+
+Les emails masqués par Meetup (`Email hidden • Upgrade to Pro...`) sont automatiquement ignorés.
+
+**Exemple d'export Meetup** (voir `examples/meetup-export-example.csv`) :
+```csv
+"Name","Member ID","Email","Location","RSVP"
+"Jean Dupont",12345678,"jean@example.com","Paris","Yes"
+"Marie Martin",87654321,"Email hidden • Upgrade to Pro...","Lyon","Yes"
+```
+
+Pour exporter la liste depuis Meetup :
+1. Aller sur votre événement
+2. Cliquer sur "Attendees" ou "Participants"
+3. Cliquer sur "Export" et télécharger le CSV
+4. Utiliser directement ce fichier avec `meetup-picker` !
 
 ### Commandes CLI
 
